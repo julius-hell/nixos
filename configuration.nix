@@ -72,6 +72,7 @@
   environment.systemPackages = with pkgs; [
       claude-code
       git
+      opencode
   ];
  
   services.openssh.enable = true;
