@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, ... }:
+{ config, pkgs, pkgs-stable, ... }:
 
 {
   imports =
@@ -56,7 +56,7 @@
   users.users."julius" = {
     isNormalUser = true;
     description = "julius";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [];
   };
 
@@ -73,8 +73,223 @@
       claude-code
       git
       opencode
+      kitty # default terminal in Hyprland's stock config
+      yadm
+      lazygit
+      fzf # used by fzf-tab
+      kubectl
+      kubelogin # Azure AKS auth plugin for kubectl
+      sops # edit secrets/secrets.yaml
+      age
+      zed-editor
+      discord
+      brave
+      herdr
+      alacritty
+      spotify
+      teams-for-linux
+      easyeffects
+      jq # used by ~/.config/hypr/focus-or-launch-alacritty.sh
+      awscli2
+      pkgs-stable.azure-cli # broken on unstable (python fabric), taken from stable
+      freelens-bin
+      bruno
+      kdePackages.dolphin
+      btop
+      neovim
+      lsd
+      bat
+      # Called from ~/.config/hypr
+      yazi # SUPER+Y
+      brightnessctl # brightness keys
+      playerctl # media keys
+      hyprshot # ALT+SHIFT+4/5/6 screenshots
+      glib # gsettings (dark theme on startup)
+      qt6Packages.qt6ct # QT_QPA_PLATFORMTHEME=qt6ct
+      adwaita-icon-theme # XCURSOR_THEME=Adwaita
   ];
- 
+
+  # Polkit agent, started from Hyprland autostart via `systemctl --user start hyprpolkitagent`
+  systemd.packages = [ pkgs.hyprpolkitagent ];
+
+  # NFS share from the Synology NAS, mounted on first access (won't block boot if unreachable)
+  boot.supportedFilesystems = [ "nfs" ];
+  fileSystems."/mnt/Backup-Nixos" = {
+    device = "192.168.178.117:/volume1/Backup-Nixos";
+    fsType = "nfs";
+    options = [ "x-systemd.automount" "noauto" "x-systemd.idle-timeout=600" "nofail" ];
+  };
+
+  # Secrets from secrets/secrets.yaml (edit with `sops secrets/secrets.yaml`).
+  # Decrypted with a personal age key, not a host key, so any machine works once the
+  # private key is placed at /var/lib/sops-nix/key.txt (root-only, 0600).
+  sops = {
+    defaultSopsFile = ./secrets/secrets.yaml;
+    age.keyFile = "/var/lib/sops-nix/key.txt";
+    age.sshKeyPaths = [ ]; # don't derive keys from the host's SSH key
+    gnupg.sshKeyPaths = [ ];
+    secrets.restic-password = { };
+  };
+
+  # Daily restic backup of the home directory to the NAS share above
+  services.restic.backups.home = {
+    initialize = true; # create the repository on first run
+    repository = "/mnt/Backup-Nixos/restic";
+    passwordFile = config.sops.secrets.restic-password.path;
+    paths = [ "/home/julius" ];
+    exclude = [
+      "/home/julius/.cache"
+      "/home/julius/.local/share/Trash"
+      "**/node_modules"
+      "**/.direnv"
+    ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true; # catch up on a missed run (e.g. VM was off)
+      RandomizedDelaySec = "1h";
+    };
+    pruneOpts = [
+      "--keep-daily 7"
+      "--keep-weekly 4"
+      "--keep-monthly 6"
+    ];
+  };
+
+  # VM clipboard sharing with the host via the SPICE agent (needs a Spice display in virt-manager)
+  services.spice-vdagentd.enable = true;
+  # Session half of the agent; its XDG autostart entry has X-systemd-skip, so UWSM never starts it
+  systemd.user.services.spice-vdagent = {
+    description = "SPICE guest session agent";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.spice-vdagent}/bin/spice-vdagent -x";
+      Restart = "on-failure";
+    };
+  };
+
+  # Lock screen (module also sets up its PAM service) and idle daemon (~/.config/hypr/hypridle.conf)
+  programs.hyprlock.enable = true;
+  services.hypridle.enable = true;
+
+  # zsh as login shell; the modules below add their init lines to interactive zsh
+  users.defaultUserShell = pkgs.zsh;
+  programs.zsh = {
+    enable = true;
+    histSize = 10000; # also sets SAVEHIST; HISTFILE defaults to ~/.zsh_history
+    ohMyZsh = {
+      enable = true;
+      theme = "agnoster";
+      plugins = [ "git" ];
+    };
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
+    # fzf-tab isn't packaged as an oh-my-zsh plugin, so source it directly
+    interactiveShellInit = ''
+      source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
+    '';
+    shellAliases = {
+      nano = "nvim";
+      ls = "lsd";
+      cat = "bat";
+      lg = "lazygit";
+      kustomize = "kubectl kustomize";
+    };
+  };
+  programs.zoxide = {
+    enable = true;
+    flags = [ "--cmd" "cd" ];
+  };
+  programs.atuin = {
+    enable = true;
+    enableZshIntegration = true;
+    flags = [ "--disable-up-arrow" ];
+    # The module points ATUIN_CONFIG_DIR at /etc/atuin, which only exists when
+    # settings are non-empty; otherwise atuin tries (and fails) to create it.
+    settings.update_check = false; # updates come from Nix
+  };
+  # Powerline glyphs for the agnoster theme (picked up as a fontconfig fallback)
+  fonts.packages = [ pkgs.nerd-fonts.symbols-only ];
+
+  # Fallback Node LTS (pkgs.nodejs, currently 24); projects pin their own via dev shells.
+  # Global npm installs go to ~/.local (bins in ~/.local/bin, which is added to PATH).
+  programs.npm = {
+    enable = true;
+    npmrc = ''
+      prefix = ''${HOME}/.local
+    '';
+  };
+  environment.localBinInPath = true;
+
+  # Per-project dev shells: auto-load `use flake` from .envrc (nix-direnv included)
+  programs.direnv.enable = true;
+
+  # Run unpatched prebuilt binaries (npm deps like esbuild/playwright, nvm-style downloads)
+  programs.nix-ld.enable = true;
+
+  # NetworkManager tray applet (systemd user service in the graphical session)
+  programs.nm-applet.enable = true;
+
+  # Tailscale daemon (run `sudo tailscale up` once to log in)
+  services.tailscale.enable = true;
+
+  # Docker daemon (incl. compose plugin); "docker" group above allows use without sudo
+  virtualisation.docker.enable = true;
+
+  # Git Credential Manager, storing credentials in the Secret Service keyring
+  programs.git = {
+    enable = true;
+    config.credential = {
+      helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
+      credentialStore = "secretservice";
+    };
+  };
+
+  # Secret Service provider for GCM; unlocked on login via PAM
+  services.gnome.gnome-keyring.enable = true;
+  programs.seahorse.enable = true; # GUI to inspect/manage the keyring
+
+  # 1Password (module sets up the polkit/system-auth integration)
+  programs._1password.enable = true;
+  programs._1password-gui = {
+    enable = true;
+    polkitPolicyOwners = [ "julius" ];
+  };
+
+  # Use 1Password as the SSH agent (also enable it in 1Password > Settings > Developer)
+  services.gnome.gcr-ssh-agent.enable = false; # gnome-keyring's agent would claim SSH_AUTH_SOCK
+  programs.ssh.extraConfig = ''
+    Host *
+      IdentityAgent ~/.1password/agent.sock
+  '';
+  environment.variables.SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
+
+  # Hyprland (launched via UWSM so graphical-session.target gets activated)
+  programs.hyprland = {
+    enable = true;
+    withUWSM = true;
+  };
+
+  # Graphical login screen, defaulting to the Hyprland (UWSM) session
+  services.displayManager = {
+    sddm = {
+      enable = true;
+      wayland.enable = true;
+    };
+    defaultSession = "hyprland-uwsm";
+  };
+
+  # Noctalia desktop shell, started automatically in the graphical session
+  programs.noctalia = {
+    enable = true;
+    systemd.enable = true;
+    recommendedServices.enable = true;
+  };
+
+  # Hint Electron/Chromium apps to use Wayland
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
   services.openssh.enable = true;
   environment.shellAliases = {
     rebuild = "sudo nixos-rebuild switch --flake ~/projects/nixos-config#nixos";
