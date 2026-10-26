@@ -1,0 +1,4 @@
+# age private keys for sops; must never be committed (public key is in .sops.yaml)
+keys.txt
+key.txt
+*.agekey
