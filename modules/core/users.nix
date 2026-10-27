@@ -6,5 +6,7 @@
     isNormalUser = true;
     description = "julius";
     extraGroups = [ "networkmanager" "wheel" "docker" ];
+    # SSH login (key only, see core/networking.nix)
+    openssh.authorizedKeys.keyFiles = [ ../../ssh-jh.pub ];
   };
 }

@@ -9,5 +9,20 @@
   # Tailscale daemon (run `sudo tailscale up` once to log in)
   services.tailscale.enable = true;
 
-  services.openssh.enable = true;
+  # SSH server: public key login only (authorized keys in core/users.nix), no root login
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
+
+  # mDNS: resolve *.local hostnames via Avahi (opens UDP 5353 in the firewall)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
 }

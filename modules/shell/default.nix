@@ -17,6 +17,9 @@
     # fzf-tab isn't packaged as an oh-my-zsh plugin, so source it directly
     interactiveShellInit = ''
       source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
+
+      # fnm: switch Node versions per project (.nvmrc / .node-version) on cd
+      eval "$(${pkgs.fnm}/bin/fnm env --use-on-cd --shell zsh)"
     '';
     shellAliases = {
       nano = "nvim";
@@ -50,6 +53,8 @@
     lsd
     bat
     btop
+    unzip
+    zip
     yadm # dotfiles
   ];
 }

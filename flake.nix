@@ -10,9 +10,11 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Declarative Flatpak remotes and apps (modules/desktop/flatpak.nix)
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-stable, sops-nix, ... }:
+  outputs = { self, nixpkgs, nixpkgs-stable, sops-nix, nix-flatpak, ... }:
     let
       system = "x86_64-linux";
     in
@@ -25,6 +27,7 @@
         modules = [
           ./hosts/nixos
           sops-nix.nixosModules.sops
+          nix-flatpak.nixosModules.nix-flatpak
         ];
       };
     };

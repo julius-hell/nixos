@@ -1,6 +1,6 @@
-# Hyprland desktop: compositor, login screen, shell, lock/idle and the tools
+# Hyprland desktop: compositor, login screen, shell and the tools
 # called from the dotfiles in ~/.config/hypr
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   # Launched via UWSM so graphical-session.target gets activated
@@ -9,28 +9,27 @@
     withUWSM = true;
   };
 
+  services.xserver.enable = true;
+
   # Graphical login screen, defaulting to the Hyprland (UWSM) session
   services.displayManager = {
     sddm = {
       enable = true;
-      wayland.enable = true;
+      wayland.enable = false;
     };
     defaultSession = "hyprland-uwsm";
   };
 
-  # Noctalia desktop shell, started automatically in the graphical session
+  # Noctalia desktop shell, started automatically in the graphical session.
+  # Also handles idle (lock/screen off/suspend), the lock screen (PAM "login") and the polkit agent.
   programs.noctalia = {
     enable = true;
     systemd.enable = true;
     recommendedServices.enable = true;
   };
 
-  # Lock screen (module also sets up its PAM service) and idle daemon (~/.config/hypr/hypridle.conf)
-  programs.hyprlock.enable = true;
-  services.hypridle.enable = true;
-
-  # Polkit agent, started from Hyprland autostart via `systemctl --user start hyprpolkitagent`
-  systemd.packages = [ pkgs.hyprpolkitagent ];
+  # recommendedServices would enable it by default; it would race Noctalia's idle timers
+  services.hypridle.enable = lib.mkForce false;
 
   # Hint Electron/Chromium apps to use Wayland
   environment.sessionVariables.NIXOS_OZONE_WL = "1";

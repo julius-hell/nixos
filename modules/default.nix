@@ -7,11 +7,13 @@
     ./core/secrets.nix
     ./core/users.nix
     ./desktop/apps.nix
+    ./desktop/flatpak.nix
     ./desktop/hyprland.nix
     ./dev
     ./security/1password.nix
     ./security/keyring.nix
     ./services/backup.nix
+    ./services/storage.nix
     ./shell
   ];
 }
