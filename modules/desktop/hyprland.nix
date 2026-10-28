@@ -43,6 +43,7 @@
     brightnessctl # brightness keys
     playerctl # media keys
     hyprshot # ALT+SHIFT+4/5/6 screenshots
+    wl-clipboard # wl-copy/wl-paste; Claude Code reads pasted images via wl-paste
     glib # gsettings (dark theme on startup)
     qt6Packages.qt6ct # QT_QPA_PLATFORMTHEME=qt6ct
     adwaita-icon-theme # XCURSOR_THEME=Adwaita
