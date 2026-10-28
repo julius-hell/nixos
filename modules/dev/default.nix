@@ -48,6 +48,12 @@
   # Per-project dev shells: auto-load `use flake` from .envrc (nix-direnv included)
   programs.direnv.enable = true;
 
+  # Java on PATH plus JAVA_HOME; the Firebase emulators are JVM-based and need JDK 21+
+  programs.java = {
+    enable = true;
+    package = pkgs.jdk21_headless;
+  };
+
   # Docker daemon (incl. compose plugin); the "docker" group allows use without sudo
   virtualisation.docker.enable = true;
 
@@ -67,6 +73,7 @@
     kubelogin # Azure AKS auth plugin for kubectl
     freelens-bin
     awscli2
+    firebase-tools
     pkgs-stable.azure-cli # broken on unstable (python fabric), taken from stable
     terraform # unfree (BSL), allowed in core/nix.nix
 
