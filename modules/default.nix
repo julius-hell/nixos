@@ -13,6 +13,7 @@
     ./security/1password.nix
     ./security/keyring.nix
     ./services/backup.nix
+    ./services/printing.nix
     ./services/storage.nix
     ./shell
   ];
