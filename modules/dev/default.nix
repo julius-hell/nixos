@@ -68,6 +68,8 @@
     fnm # Node version manager (shell hook in shell/default.nix)
     pnpm
 
+    python3 # also needed by the herdr-lazygit plugin
+
     # Kubernetes and cloud
     kubectl
     kubelogin # Azure AKS auth plugin for kubectl
