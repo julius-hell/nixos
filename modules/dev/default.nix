@@ -81,7 +81,8 @@
 
     bruno # API client
 
-    # Databases (the Tabularis SQL client comes from Flatpak, see desktop/flatpak.nix)
+    # Databases
+    datagrip # unfree, allowed in core/nix.nix
     # PostgreSQL client tools only (no server binaries like postgres/initdb/pg_ctl on PATH)
     (runCommand "postgresql-client-${postgresql.version}" { } ''
       mkdir -p $out/bin

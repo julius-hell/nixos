@@ -7,7 +7,6 @@
     ./core/secrets.nix
     ./core/users.nix
     ./desktop/apps.nix
-    ./desktop/flatpak.nix
     ./desktop/hyprland.nix
     ./dev
     ./security/1password.nix
