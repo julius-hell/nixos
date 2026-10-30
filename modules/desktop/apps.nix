@@ -2,6 +2,12 @@
 { pkgs, ... }:
 
 {
+  # Steam's NixOS module also enables 32-bit graphics and controller support.
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
+  };
+
   environment.systemPackages = with pkgs; [
     brave
     discord
