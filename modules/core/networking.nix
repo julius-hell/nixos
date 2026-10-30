@@ -7,7 +7,10 @@
   programs.nm-applet.enable = true;
 
   # Tailscale daemon (run `sudo tailscale up` once to log in)
-  services.tailscale.enable = true;
+  services.tailscale = {
+    enable = true;
+    extraSetFlags = [ "--operator=julius" ];
+  };
 
   # SSH server: public key login only (authorized keys in core/users.nix), no root login
   services.openssh = {
