@@ -61,6 +61,7 @@
     # Editors and AI agents
     claude-code
     opencode
+    opencode-desktop
     zed-editor
 
     lazygit

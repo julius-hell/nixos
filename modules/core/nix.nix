@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -9,6 +9,6 @@
   programs.nix-ld.enable = true;
 
   environment.shellAliases = {
-    rebuild = "sudo nixos-rebuild switch --flake ~/projects/nixos-config#nixos";
+    rebuild = ''find "$HOME/projects/nixos-config" -type f -name '*.nix' -exec ${pkgs.nixfmt}/bin/nixfmt {} + && sudo nixos-rebuild switch --flake "$HOME/projects/nixos-config#nixos"'';
   };
 }
