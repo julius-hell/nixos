@@ -7,6 +7,11 @@
   fileSystems."/mnt/Storage" = {
     device = "192.168.178.117:/volume1/Storage";
     fsType = "nfs";
-    options = [ "x-systemd.automount" "noauto" "x-systemd.idle-timeout=600" "nofail" ];
+    options = [
+      "x-systemd.automount"
+      "noauto"
+      "x-systemd.idle-timeout=600"
+      "nofail"
+    ];
   };
 }

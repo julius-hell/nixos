@@ -12,7 +12,14 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-stable, sops-nix, ... }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      nixpkgs-stable,
+      sops-nix,
+      ...
+    }:
     let
       system = "x86_64-linux";
     in

@@ -12,12 +12,23 @@
           email = "mail@jhell.dev";
         };
       }
+      {
+        core.pager = "delta";
+        interactive.diffFilter = "delta --color-only";
+        delta = {
+          navigate = true;
+          dark = true;
+          line-numbers = true;
+        };
+        merge.conflictstyle = "zdiff3";
+      }
       # Work repos commit with the work address
       {
-        includeIf."gitdir:/home/julius/projects/slenderiser/".path = "${pkgs.writeText "gitconfig-slenderiser" ''
-          [user]
-          	email = j.hell@slenderiser.de
-        ''}";
+        includeIf."gitdir:/home/julius/projects/slenderiser/".path =
+          "${pkgs.writeText "gitconfig-slenderiser" ''
+            [user]
+            	email = j.hell@slenderiser.de
+          ''}";
       }
       # Git Credential Manager, storing credentials in the Secret Service keyring (see security/keyring.nix)
       {
@@ -64,6 +75,7 @@
     opencode-desktop
     zed-editor
 
+    delta # git-delta diff viewer
     lazygit
 
     fnm # Node version manager (shell hook in shell/default.nix)

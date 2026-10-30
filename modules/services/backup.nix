@@ -7,7 +7,12 @@
   fileSystems."/mnt/Backup-Nixos" = {
     device = "192.168.178.117:/volume1/Backup-Nixos";
     fsType = "nfs";
-    options = [ "x-systemd.automount" "noauto" "x-systemd.idle-timeout=600" "nofail" ];
+    options = [
+      "x-systemd.automount"
+      "noauto"
+      "x-systemd.idle-timeout=600"
+      "nofail"
+    ];
   };
 
   sops.secrets.restic-password = { };

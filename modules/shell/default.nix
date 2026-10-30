@@ -32,7 +32,10 @@
 
   programs.zoxide = {
     enable = true;
-    flags = [ "--cmd" "cd" ];
+    flags = [
+      "--cmd"
+      "cd"
+    ];
   };
 
   programs.atuin = {
