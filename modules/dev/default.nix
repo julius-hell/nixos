@@ -13,6 +13,7 @@
         };
       }
       {
+        advice.defaultBranchName = false;
         core.pager = "delta";
         interactive.diffFilter = "delta --color-only";
         delta = {
@@ -77,11 +78,13 @@
 
     delta # git-delta diff viewer
     lazygit
+    gh # GitHub CLI
 
     fnm # Node version manager (shell hook in shell/default.nix)
     pnpm
 
     python3 # also needed by the herdr-lazygit plugin
+    dotnet-sdk_10
 
     # Kubernetes and cloud
     kubectl

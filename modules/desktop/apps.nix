@@ -15,6 +15,7 @@
     herdr
     spotify
     teams-for-linux
+    thunderbird
   ];
 
   # Run EasyEffects in the background (no window) for the whole graphical session (started by UWSM)
