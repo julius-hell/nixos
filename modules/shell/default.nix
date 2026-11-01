@@ -56,6 +56,7 @@
     lsd
     bat
     btop
+    dnsutils # nslookup, dig and host
     unzip
     zip
     yadm # dotfiles
