@@ -9,9 +9,11 @@
   };
 
   environment.systemPackages = with pkgs; [
+    bambu-studio
     brave
     discord
     easyeffects
+    gridcraft
     herdr
     spotify
     teams-for-linux
